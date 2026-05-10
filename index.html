@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Examen de Simulación — Matemáticas y Ciencias</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#010a14;font-family:'Segoe UI',system-ui,sans-serif;color:#e2e8f0}
+  input::placeholder{color:#2a6a8a}
+  input:focus{border-color:rgba(0,229,176,0.5)!important;box-shadow:0 0 0 3px rgba(0,229,176,0.1)}
+  button:hover:not(:disabled){filter:brightness(1.08)}
+  ::-webkit-scrollbar{width:6px}
+  ::-webkit-scrollbar-track{background:#010a14}
+  ::-webkit-scrollbar-thumb{background:#003d2e;border-radius:3px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const QS = [
+  {id:1,cat:"Estadística",text:"¿Cuál es la mediana del siguiente conjunto?\n\n{ 7, 7, 8, 9, 3, 5, 2 }",opts:["5","6","7","9"],ans:2,exp:"Ordenado: {2,3,5,7,7,8,9}. El valor central (4° de 7 datos) es 7."},
+  {id:2,cat:"Estadística",text:"¿Cuál es la moda del siguiente conjunto?\n\n{ 12, 13, 15, 12, 17, 12, 15, 19 }",opts:["13","15","17","12"],ans:3,exp:"Frecuencias: 12→3 veces, 15→2 veces, demás→1. La moda es 12."},
+  {id:3,cat:"Estadística",text:"Un conjunto de números suma 72 entre 12 elementos. ¿Cuál es el promedio?",opts:["4","5","6","7"],ans:2,exp:"Promedio = Suma ÷ n = 72 ÷ 12 = 6."},
+  {id:4,cat:"Estadística",text:"Un conjunto tiene un promedio de 8. Si sus elementos suman 80, ¿cuántos elementos tiene el conjunto?",opts:["6","8","10","12"],ans:2,exp:"n = Suma ÷ Promedio = 80 ÷ 8 = 10 elementos."},
+  {id:5,cat:"Estadística",text:"Un conjunto tiene un promedio de 32 y está formado por 8 elementos. ¿Cuál es la suma total de todos sus elementos?",opts:["224","248","256","288"],ans:2,exp:"Suma = Promedio × n = 32 × 8 = 256."},
+  {id:6,cat:"Estadística",text:"¿Cuál es la mediana de los primeros cuatro múltiplos positivos de 4?",opts:["8","9","10","12"],ans:2,exp:"Primeros 4 múltiplos de 4: {4,8,12,16}. Mediana = (8+12)/2 = 10."},
+  {id:7,cat:"Estadística",text:"El promedio de cuatro números es 12. Si tres de esos números son 2, 1 y 4, ¿cuál es el cuarto número?",opts:["37","39","41","43"],ans:2,exp:"Suma total = 4×12=48. Suma conocida: 2+1+4=7. Cuarto número: 48−7=41."},
+  {id:8,cat:"Estadística",text:"¿Cuál es la mediana de los factores primos de 36 (con repetición)?",opts:["2","2.5","3","3.5"],ans:1,exp:"36 = 2²×3². Factores: {2,2,3,3}. Mediana = (2+3)/2 = 2.5."},
+  {id:9,cat:"Estadística",text:"¿Cuál es la moda de los factores primos de 52 (con repetición)?",opts:["4","2","13","26"],ans:1,exp:"52 = 2²×13. Factores: {2,2,13}. El 2 aparece más veces. Moda = 2."},
+  {id:10,cat:"Estadística",text:"¿Cuál es la mediana de seis números consecutivos si su media es 5?",opts:["4","4.5","5","5.5"],ans:2,exp:"En una sucesión equiespaciada, media = mediana siempre. Si la media es 5, la mediana también es 5."},
+  {id:11,cat:"Sucesiones",text:"¿Qué número aparecerá en la posición 42 de la siguiente sucesión?\n\n5, 8, 11, 14, 17, …",opts:["124","126","128","130"],ans:2,exp:"Fórmula: aₙ = 3n+2. En posición 42: a₄₂ = 3(42)+2 = 128."},
+  {id:12,cat:"Sucesiones",text:"¿Qué número aparecerá en la posición 210 de la siguiente sucesión?\n\n1, 5, 9, 13, 17, …",opts:["833","835","837","841"],ans:2,exp:"Fórmula: aₙ = 4n−3. En posición 210: a₂₁₀ = 4(210)−3 = 837."},
+  {id:13,cat:"Sucesiones",text:'¿En qué letra terminará la sucesión de la palabra "AMOR" en la posición 120?',opts:["A","M","O","R"],ans:3,exp:"AMOR = 4 letras. 120 ÷ 4 = 30 exacto (residuo 0). Residuo 0 → última letra del ciclo = R."},
+  {id:14,cat:"Sucesiones",text:'¿En qué letra terminará la sucesión de la palabra "REPROBADO" en la posición 85?',opts:["E","P","R","O"],ans:2,exp:"REPROBADO = 9 letras. 85 ÷ 9 = 9 con residuo 4. La 4ª letra de REPROBADO es R."},
+  {id:15,cat:"Sucesiones",text:"¿Qué número es el siguiente en la serie?\n\n2, 4, 8, 10, 14, 16, ___",opts:["18","19","20","22"],ans:2,exp:"Patrón alternado: +2,+4,+2,+4... Siguiente: 16+4=20."},
+  {id:16,cat:"Sucesiones",text:"¿Qué número falta en la siguiente sucesión?\n\n4, 6, 10, ___, 34, 66",opts:["14","16","18","20"],ans:2,exp:"Las diferencias se duplican: +2,+4,+8,+16,+32. → 10+8=18, 18+16=34✓, 34+32=66✓."},
+  {id:17,cat:"Sucesiones",text:"¿Cuál es el siguiente número en la sucesión de Fibonacci?\n\n1, 1, 2, 3, 5, 8, 13, ___",opts:["18","20","21","24"],ans:2,exp:"Cada término = suma de los dos anteriores: 8+13=21."},
+  {id:18,cat:"Sucesiones",text:"¿Cuál es el siguiente término en la serie?\n\nm+2n−4,  m²−3n³+6,  m³+5n⁵−8,  m⁴−7n⁷+10,  ___",opts:["m⁵−11n⁹+12","m⁵−9n⁹+12","m⁵+11n⁹−12","m⁵+9n⁹−12"],ans:1,exp:"Exp m: +1. Coef n: +2,−3,+5,−7→−9. Exp n: 1,3,5,7→9. Constante: −4,+6,−8,+10→−12."},
+  {id:19,cat:"Probabilidad",text:"En una rifa: 100 alumnos de 1° (1 boleto c/u), 80 de 2° (3 boletos c/u) y 60 de 3° (4 boletos c/u). ¿Cuál es la probabilidad de que gane un alumno de tercer año?",opts:["1/3","5/29","1/580","12/29"],ans:3,exp:"Total boletos: 100+240+240=580. Boletos de 3°: 240. P=240/580=12/29."},
+  {id:20,cat:"Probabilidad",text:"Tengo 3 destinos de vacaciones y 4 medios de transporte. ¿Qué probabilidad hay de que vaya a la playa en autobús?",opts:["1/12","2/12","7/12","2/7"],ans:0,exp:"Espacio muestral: 3×4=12. Casos favorables (playa+autobús)=1. P=1/12."},
+  {id:21,cat:"Probabilidad",text:"Se numeran 10 pelotas del 1 al 10: 3 rojas, 4 amarillas y 2 azules. ¿Cuál es la probabilidad de que una pelota roja tenga un número primo?",opts:["12%","15%","18%","21%"],ans:0,exp:"P(roja)=3/10. Primos del 1-10: {2,3,5,7}→4. P(primo)=4/10. P=3/10×4/10=12%."},
+  {id:22,cat:"Probabilidad",text:"En una bolsa hay 5 bolas rojas, 3 azules y 2 verdes. ¿Cuál es la probabilidad de sacar una bola azul?",opts:["1/5","3/10","1/3","3/5"],ans:1,exp:"Total: 5+3+2=10. Azules: 3. P(azul)=3/10."},
+  {id:23,cat:"Probabilidad",text:"Se lanza un dado de 6 caras. ¿Cuál es la probabilidad de obtener un número mayor que 4?",opts:["1/6","1/3","1/2","2/3"],ans:1,exp:"Números >4: {5,6}=2 favorables. P=2/6=1/3."},
+  {id:24,cat:"Probabilidad",text:"En una clase hay 18 hombres y 12 mujeres. Al elegir un alumno al azar, ¿cuál es la probabilidad de que sea mujer?",opts:["1/3","2/5","3/5","2/3"],ans:1,exp:"Total: 30. Mujeres: 12. P=12/30=2/5."},
+  {id:25,cat:"Probabilidad",text:"Si P(A) = 3/10,  P(B) = 2/10  y  P(A∩B) = 1/10\n¿Cuánto es P(A∪B)?",opts:["1/10","3/10","4/10","5/10"],ans:2,exp:"P(A∪B)=P(A)+P(B)−P(A∩B)=3/10+2/10−1/10=4/10."},
+  {id:26,cat:"Probabilidad",text:"Si P(A) = 2/20,  P(B) = 4/20  y  P(A∩B) = 2/20\n¿Cuánto es P(A∪B)?",opts:["2/20","3/20","4/20","6/20"],ans:2,exp:"P(A∪B)=2/20+4/20−2/20=4/20=1/5."},
+  {id:27,cat:"Aritmética",text:"Un artículo cuesta $500 y tiene un 40% de descuento. ¿Cuánto es el costo final?",opts:["$200","$250","$300","$350"],ans:2,exp:"Descuento: $500×0.40=$200. Precio final: $500−$200=$300."},
+  {id:28,cat:"Aritmética",text:"Un artículo cuesta $870 y tiene un 15% de descuento. ¿Cuánto es el costo final?",opts:["$730.50","$739.50","$750.00","$740.00"],ans:1,exp:"Descuento: $870×0.15=$130.50. Precio final: $870−$130.50=$739.50."},
+  {id:29,cat:"Aritmética",text:"Una playera de $600 tiene 40% de descuento y un pantalón de $900 tiene 30% de descuento. ¿Cuánto se ahorra en total?",opts:["$180","$240","$320","$510"],ans:3,exp:"Ahorro playera: $240. Ahorro pantalón: $270. Total: $510."},
+  {id:30,cat:"Aritmética",text:"Enrique recibió $4,000. Usó el 30% para deudas. Del resto, el 50% en ropa y lo demás lo invirtió. ¿Cuánto invirtió?",opts:["$600","$800","$1,000","$1,400"],ans:3,exp:"Deudas: $1,200. Restante: $2,800. Ropa: $1,400. Inversión: $1,400."},
+  {id:31,cat:"Aritmética",text:"Carlos gana $8,500 mensual y ahorra el 15% cada mes. ¿Cuánto habrá ahorrado en 6 meses?",opts:["$1,275","$5,100","$7,650","$15,300"],ans:2,exp:"Ahorro mensual: $1,275. En 6 meses: $1,275×6=$7,650."},
+  {id:32,cat:"Aritmética",text:"María tenía $2,400. Gastó 1/3 en ropa y 1/4 del resto en comida. ¿Cuánto le quedó?",opts:["$600","$800","$1,200","$1,800"],ans:2,exp:"Ropa: $800. Restante: $1,600. Comida: $400. Quedó: $1,200."},
+  {id:33,cat:"Aritmética",text:"Un artículo cuesta $450. Se aplica un 20% de descuento y luego un 10% adicional. ¿Cuál es el precio final?",opts:["$315","$324","$336","$360"],ans:1,exp:"Después del 20%: $360. Después del 10% adicional: $360×0.90=$324."},
+  {id:34,cat:"Aritmética",text:"El promedio de cinco números es 36. Si cuatro de ellos son 6, 7, 3 y 2, ¿cuál es el quinto número?",opts:["142","152","162","172"],ans:2,exp:"Suma total: 5×36=180. Suma conocida: 6+7+3+2=18. Quinto: 180−18=162."},
+  {id:35,cat:"Álgebra",text:"Si n★m = (n+m)(n−m), ¿cuánto vale 3★5?",opts:["64","16","10","−16"],ans:3,exp:"3★5=(3+5)(3−5)=8×(−2)=−16."},
+  {id:36,cat:"Álgebra",text:"Se define a◆b = a² − 2b. ¿Cuánto vale 4◆3?",opts:["8","10","12","16"],ans:1,exp:"4◆3=4²−2(3)=16−6=10."},
+  {id:37,cat:"Álgebra",text:"Si f(x) = 3x² − 2x + 1, ¿cuánto vale f(2)?",opts:["7","9","11","13"],ans:1,exp:"f(2)=3(4)−2(2)+1=12−4+1=9."},
+  {id:38,cat:"Álgebra",text:"Si la raíz de la factorización prima de un número es 3√6, ¿cuál es dicho número?",opts:["18","36","54","108"],ans:2,exp:"Si √N=3√6, entonces N=(3√6)²=9×6=54."},
+  {id:39,cat:"Razón y Proporción",text:"Un tren recorre 360 km en 4 horas. ¿Cuántos kilómetros recorrerá en 7 horas a la misma velocidad?",opts:["540 km","600 km","630 km","720 km"],ans:2,exp:"Velocidad: 360÷4=90 km/h. En 7h: 90×7=630 km."},
+  {id:40,cat:"Razón y Proporción",text:"Si 8 obreros construyen una pared en 15 días, ¿cuántos días tardarán 12 obreros?",opts:["8 días","10 días","12 días","15 días"],ans:1,exp:"Proporción inversa: 8×15=12×x → x=120÷12=10 días."},
+];
+
+const CC={
+  "Estadística":"#00e5b0","Sucesiones":"#38bdf8","Probabilidad":"#a78bfa",
+  "Aritmética":"#34d399","Álgebra":"#f472b6","Razón y Proporción":"#fb923c"
+};
+const IC={
+  "Estadística":"📊","Sucesiones":"🔢","Probabilidad":"🎲",
+  "Aritmética":"💰","Álgebra":"⚡","Razón y Proporción":"⚖️"
+};
+const LB=["A","B","C","D"];
+
+function App(){
+  const [screen,setScreen]=useState("welcome");
+  const [name,setName]=useState("");
+  const [inp,setInp]=useState("");
+  const [qi,setQi]=useState(0);
+  const [sel,setSel]=useState(null);
+  const [done,setDone]=useState(false);
+  const [score,setScore]=useState(0);
+  const [res,setRes]=useState([]);
+  const [showExp,setShowExp]=useState(false);
+
+  const q=QS[qi];
+  const pct=Math.round((qi/QS.length)*100);
+  const cc=CC[q?.cat]||"#00e5b0";
+
+  function start(){if(!inp.trim())return;setName(inp.trim());setScreen("quiz");}
+  function pick(i){
+    if(done)return;setSel(i);setDone(true);
+    const ok=i===q.ans;if(ok)setScore(s=>s+1);
+    setRes(r=>[...r,{id:q.id,cat:q.cat,ok}]);
+  }
+  function nxt(){
+    if(qi<QS.length-1){setQi(i=>i+1);setSel(null);setDone(false);setShowExp(false);}
+    else setScreen("results");
+  }
+  function restart(){
+    setScreen("welcome");setInp("");setName("");setQi(0);
+    setSel(null);setDone(false);setScore(0);setRes([]);setShowExp(false);
+  }
+
+  const G={minHeight:"100vh",fontFamily:"'Segoe UI',system-ui,sans-serif",
+    background:"linear-gradient(160deg,#010a14 0%,#021120 50%,#010d18 100%)",color:"#e2e8f0"};
+
+  /* ── BIENVENIDA ─────────────────────────────── */
+  if(screen==="welcome"){
+    const cats=[...new Set(QS.map(q=>q.cat))];
+    return(
+      <div style={{...G,display:"flex",alignItems:"center",justifyContent:"center",padding:"24px"}}>
+        <div style={{maxWidth:540,width:"100%"}}>
+          <div style={{textAlign:"center",marginBottom:26}}>
+            <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",
+              width:78,height:78,borderRadius:"50%",marginBottom:14,fontSize:36,
+              background:"linear-gradient(135deg,#003d2e,#005c3a)",
+              border:"2px solid rgba(0,229,176,0.35)",
+              boxShadow:"0 0 32px rgba(0,229,176,0.2)"}}>🎓</div>
+            <h1 style={{margin:"0 0 6px",fontWeight:900,letterSpacing:"-0.02em",
+              fontSize:"clamp(1.5rem,4.5vw,2.1rem)",
+              background:"linear-gradient(90deg,#00e5b0,#38bdf8,#a78bfa)",
+              WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
+              EXAMEN DE SIMULACIÓN
+            </h1>
+            <p style={{color:"#1d6b9e",margin:0,fontSize:"0.8rem",fontWeight:700,letterSpacing:"0.12em"}}>
+              MATEMÁTICAS Y CIENCIAS · PREPARATORIA
+            </p>
+          </div>
+
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:20}}>
+            {[["40","Reactivos","#00e5b0"],["6","Categorías","#38bdf8"],["Prep","Nivel","#a78bfa"]].map(([v,l,c],i)=>(
+              <div key={i} style={{background:"rgba(0,40,70,0.5)",border:`1px solid ${c}25`,
+                borderRadius:12,padding:"13px 8px",textAlign:"center"}}>
+                <div style={{color:c,fontWeight:900,fontSize:"1.55rem",lineHeight:1}}>{v}</div>
+                <div style={{color:"#2a6a8a",fontSize:"0.7rem",fontWeight:700,marginTop:3}}>{l}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{display:"flex",flexWrap:"wrap",gap:7,justifyContent:"center",marginBottom:20}}>
+            {cats.map(c=>(
+              <span key={c} style={{background:`${CC[c]}18`,border:`1px solid ${CC[c]}40`,
+                color:CC[c],padding:"4px 11px",borderRadius:20,fontSize:"0.72rem",fontWeight:700}}>
+                {IC[c]} {c}
+              </span>
+            ))}
+          </div>
+
+          <div style={{background:"rgba(0,25,50,0.7)",border:"1px solid rgba(0,229,176,0.2)",
+            borderRadius:16,padding:"20px 22px",marginBottom:16,
+            boxShadow:"0 0 24px rgba(0,229,176,0.08)"}}>
+            <label style={{color:"#00e5b0",fontWeight:700,fontSize:"0.8rem",
+              display:"block",marginBottom:10,letterSpacing:"0.06em"}}>
+              👤 INGRESA TU NOMBRE COMPLETO
+            </label>
+            <input value={inp} onChange={e=>setInp(e.target.value)}
+              onKeyDown={e=>e.key==="Enter"&&start()}
+              placeholder="Ej: Juan García López"
+              style={{width:"100%",background:"rgba(0,40,80,0.6)",
+                border:"1px solid rgba(56,189,248,0.3)",borderRadius:10,
+                padding:"12px 15px",color:"white",fontSize:"0.97rem",
+                outline:"none",transition:"border 0.2s"}}/>
+          </div>
+
+          <button onClick={start} disabled={!inp.trim()} style={{
+            width:"100%",
+            background:inp.trim()?"linear-gradient(135deg,#006644,#00e5b0)":"rgba(0,80,60,0.25)",
+            color:inp.trim()?"#001a0e":"#1a5a48",
+            border:"none",padding:"15px",borderRadius:50,
+            fontSize:"1.02rem",fontWeight:800,
+            cursor:inp.trim()?"pointer":"default",
+            letterSpacing:"0.04em",
+            boxShadow:inp.trim()?"0 0 28px rgba(0,229,176,0.3)":"none",
+            transition:"all 0.25s"}}>
+            ¡COMENZAR EXAMEN! →
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── RESULTADOS ─────────────────────────────── */
+  if(screen==="results"){
+    const p2=Math.round((score/QS.length)*100);
+    const [[gc,gi,gg,gd]]=[
+      p2>=90?["#00e5b0","🏆","Excelente","¡Dominio sobresaliente!"]:
+      p2>=80?["#38bdf8","🌟","Muy Bien","¡Gran desempeño!"]:
+      p2>=70?["#818cf8","✅","Bien","Buen nivel alcanzado"]:
+      p2>=60?["#fbbf24","📝","Suficiente","Aprobado, sigue practicando"]:
+             ["#f87171","📖","Necesita Práctica","Revisa los temas señalados"]
+    ];
+    const bycat={};
+    res.forEach(r=>{if(!bycat[r.cat])bycat[r.cat]={t:0,ok:0};bycat[r.cat].t++;if(r.ok)bycat[r.cat].ok++;});
+    return(
+      <div style={{...G,padding:"18px",overflowY:"auto"}}>
+        <div style={{maxWidth:680,margin:"0 auto"}}>
+          <div style={{textAlign:"center",paddingTop:28,paddingBottom:18}}>
+            <div style={{fontSize:50}}>{gi}</div>
+            <h1 style={{color:"white",fontSize:"1.8rem",fontWeight:900,margin:"10px 0 4px"}}>Resultados del Examen</h1>
+            <p style={{color:"#38bdf8",margin:"0 0 2px",fontSize:"0.9rem",fontWeight:600}}>{name}</p>
+            <p style={{color:gc,margin:0,fontWeight:700,fontSize:"0.95rem"}}>{gd}</p>
+          </div>
+
+          <div style={{background:"rgba(0,20,45,0.8)",border:`1px solid ${gc}35`,
+            borderRadius:20,padding:"26px",marginBottom:14,textAlign:"center",
+            boxShadow:`0 0 30px ${gc}18`}}>
+            <div style={{fontSize:"3.8rem",fontWeight:900,color:gc,lineHeight:1}}>{score}/{QS.length}</div>
+            <div style={{fontSize:"2rem",fontWeight:800,color:"white",marginTop:2}}>{p2}%</div>
+            <div style={{color:gc,fontWeight:700,fontSize:"1rem",marginTop:2}}>{gg}</div>
+            <div style={{background:"rgba(255,255,255,0.07)",borderRadius:8,height:9,margin:"14px 0 0",overflow:"hidden"}}>
+              <div style={{background:`linear-gradient(90deg,${gc}70,${gc})`,height:"100%",borderRadius:8,width:`${p2}%`}}/>
+            </div>
+          </div>
+
+          <div style={{background:"rgba(0,15,38,0.7)",border:"1px solid rgba(56,189,248,0.15)",
+            borderRadius:18,padding:"18px 20px",marginBottom:14}}>
+            <h2 style={{color:"white",margin:"0 0 14px",fontSize:"0.88rem",fontWeight:800,letterSpacing:"0.06em"}}>
+              📊 DESEMPEÑO POR CATEGORÍA
+            </h2>
+            {Object.entries(bycat).map(([cat,{t,ok}])=>{
+              const cp=Math.round((ok/t)*100),c=CC[cat]||"#00e5b0";
+              return(
+                <div key={cat} style={{marginBottom:11}}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                    <span style={{color:c,fontWeight:700,fontSize:"0.82rem"}}>{IC[cat]} {cat}</span>
+                    <span style={{color:"white",fontWeight:700,fontSize:"0.82rem"}}>{ok}/{t} · {cp}%</span>
+                  </div>
+                  <div style={{background:"rgba(255,255,255,0.07)",borderRadius:5,height:7}}>
+                    <div style={{background:c,height:"100%",borderRadius:5,width:`${cp}%`,transition:"width 0.8s"}}/>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div style={{background:"rgba(0,15,38,0.7)",border:"1px solid rgba(56,189,248,0.15)",
+            borderRadius:18,padding:"18px 20px",marginBottom:18}}>
+            <h2 style={{color:"white",margin:"0 0 12px",fontSize:"0.88rem",fontWeight:800,letterSpacing:"0.06em"}}>
+              📋 RESUMEN DE RESPUESTAS
+            </h2>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(34px,1fr))",gap:5}}>
+              {res.map((r,i)=>(
+                <div key={i} title={`P${r.id} – ${r.cat}`} style={{
+                  background:r.ok?"rgba(0,180,120,0.2)":"rgba(220,50,50,0.2)",
+                  color:r.ok?"#00e5b0":"#f87171",
+                  border:`1px solid ${r.ok?"#00e5b0":"#f87171"}35`,
+                  borderRadius:7,padding:"6px 2px",
+                  textAlign:"center",fontSize:"0.73rem",fontWeight:800}}>
+                  {i+1}
+                </div>
+              ))}
+            </div>
+            <div style={{display:"flex",gap:20,marginTop:10,fontSize:"0.84rem"}}>
+              <span style={{color:"#00e5b0"}}>✓ Correctas: {score}</span>
+              <span style={{color:"#f87171"}}>✗ Incorrectas: {QS.length-score}</span>
+            </div>
+          </div>
+
+          <button onClick={restart} style={{
+            width:"100%",background:"linear-gradient(135deg,#004d33,#00e5b0)",
+            color:"#001a0e",border:"none",padding:14,borderRadius:50,
+            fontSize:"0.98rem",fontWeight:800,cursor:"pointer",marginBottom:28,
+            boxShadow:"0 0 24px rgba(0,229,176,0.25)"}}>
+            🔄 Nuevo Intento
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── QUIZ ───────────────────────────────────── */
+  return(
+    <div style={{...G,padding:"13px 15px",display:"flex",flexDirection:"column"}}>
+      <div style={{maxWidth:680,width:"100%",margin:"0 auto 12px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <span style={{color:"#1d6b9e",fontSize:"0.77rem",fontWeight:600}}>
+              Pregunta <span style={{color:"white",fontWeight:800}}>{qi+1}</span>/{QS.length}
+            </span>
+            <span style={{background:`${cc}20`,color:cc,border:`1px solid ${cc}35`,
+              padding:"2px 9px",borderRadius:20,fontSize:"0.67rem",fontWeight:700}}>
+              {IC[q.cat]} {q.cat}
+            </span>
+          </div>
+          <div style={{textAlign:"right"}}>
+            <div style={{color:"#00e5b0",fontWeight:800,fontSize:"0.87rem"}}>⭐ {score} pts</div>
+            <div style={{color:"#1d6b9e",fontSize:"0.68rem",maxWidth:130,
+              overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{name}</div>
+          </div>
+        </div>
+        <div style={{background:"rgba(0,40,70,0.5)",borderRadius:8,height:6,overflow:"hidden"}}>
+          <div style={{background:"linear-gradient(90deg,#004d33,#00e5b0)",
+            height:"100%",borderRadius:8,width:`${pct}%`,transition:"width 0.6s ease"}}/>
+        </div>
+      </div>
+
+      <div style={{maxWidth:680,width:"100%",margin:"0 auto",flex:1}}>
+        <div style={{background:"rgba(0,18,42,0.75)",border:`1px solid ${cc}30`,
+          borderRadius:18,padding:"19px 21px",marginBottom:12,
+          boxShadow:`0 0 18px ${cc}12`}}>
+          <p style={{color:"white",fontSize:"clamp(0.88rem,2.4vw,0.99rem)",
+            lineHeight:1.68,margin:0,whiteSpace:"pre-wrap"}}>
+            {q.text}
+          </p>
+        </div>
+
+        <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:12}}>
+          {q.opts.map((opt,i)=>{
+            let bg="rgba(0,25,55,0.55)",brd="1px solid rgba(0,130,180,0.15)",
+                cl="#7a9ab8",lbg="rgba(0,60,100,0.5)";
+            if(done){
+              if(i===q.ans){bg="rgba(0,160,100,0.18)";brd="2px solid #00e5b0";cl="#00e5b0";lbg="#006644";}
+              else if(i===sel){bg="rgba(200,40,40,0.18)";brd="2px solid #f87171";cl="#f87171";lbg="#7f1d1d";}
+            }else if(sel===i){bg="rgba(0,55,100,0.65)";brd="2px solid #38bdf8";cl="white";lbg="#0369a1";}
+            return(
+              <button key={i} onClick={()=>pick(i)} style={{
+                background:bg,border:brd,color:cl,borderRadius:11,
+                padding:"12px 14px",textAlign:"left",
+                cursor:done?"default":"pointer",
+                display:"flex",alignItems:"center",gap:10,
+                transition:"all 0.16s",fontSize:"0.93rem",outline:"none"}}>
+                <span style={{background:lbg,color:"white",borderRadius:6,
+                  minWidth:26,height:26,display:"flex",alignItems:"center",
+                  justifyContent:"center",fontWeight:800,fontSize:"0.8rem",flexShrink:0}}>
+                  {LB[i]}
+                </span>
+                <span style={{flex:1}}>{opt}</span>
+                {done&&i===q.ans&&<span style={{color:"#00e5b0",fontWeight:800}}>✓</span>}
+                {done&&i===sel&&i!==q.ans&&<span style={{color:"#f87171",fontWeight:800}}>✗</span>}
+              </button>
+            );
+          })}
+        </div>
+
+        {done&&(
+          <div style={{marginBottom:12}}>
+            <button onClick={()=>setShowExp(e=>!e)} style={{
+              background:"rgba(0,25,55,0.5)",color:"#38bdf8",
+              border:"1px solid rgba(56,189,248,0.2)",borderRadius:9,
+              padding:"8px 14px",cursor:"pointer",width:"100%",
+              textAlign:"left",fontSize:"0.79rem",fontWeight:700,outline:"none"}}>
+              {showExp?"▲ Ocultar explicación":"▼ Ver explicación"}
+            </button>
+            {showExp&&(
+              <div style={{background:"rgba(0,40,80,0.45)",
+                border:"1px solid rgba(56,189,248,0.2)",borderRadius:9,
+                padding:"12px 14px",marginTop:6,
+                color:"#7dd3fc",fontSize:"0.84rem",lineHeight:1.65}}>
+                💡 {q.exp}
+              </div>
+            )}
+          </div>
+        )}
+
+        {done&&(
+          <button onClick={nxt} style={{
+            width:"100%",background:"linear-gradient(135deg,#004d33,#00c87a)",
+            color:"#001a0e",border:"none",padding:"13px",borderRadius:50,
+            fontSize:"0.97rem",fontWeight:800,cursor:"pointer",marginBottom:8,
+            boxShadow:"0 0 20px rgba(0,200,122,0.25)"}}>
+            {qi<QS.length-1?"Siguiente Pregunta →":"Ver Resultados 🏆"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
